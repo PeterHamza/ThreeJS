@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=utf-8>
+    <title>three.js app</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<script src="https://threejs.org/build/three.min.js"></script>
+<script src="js/OrbitControls.js"></script>
+<script>
+    // Variables de base ------------------------------------------------------------------------------
+    var worldRadius = 10
+
+    let renderer = new THREE.WebGLRenderer();
+    document.body.appendChild(renderer.domElement);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.5, 1000);
+    let scene = new THREE.Scene();
+    camera.position.z = 20;
+
+    // Textures & ombres ------------------------------------------------------------------------------
+
+    let textureLoader = new THREE.TextureLoader();
+
+    let ambientLight = new THREE.AmbientLight(0xffffff, .8);
+    scene.add(ambientLight);
+
+    renderer.shadowMap.enabled = true;
+
+    // Background -------------------------------------------------------------------------------------
+
+    scene.background = new THREE.Color(0, .8, 0);
+
+    // Contrôles --------------------------------------------------------------------------------------
+
+    let controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.minDistance = 10;
+    controls.maxDistance = 200;
+
+    // Environnement --------------------------------------------------------------------------------------
+
+    let environment = new THREE.Group();
+    scene.add(environment);
+
+        // Monde ------------------------------------------------------------------------------------------
+
+    let world = new THREE.Mesh(
+        new THREE.SphereGeometry(worldRadius, 32, 32),
+        new THREE.MeshPhongMaterial({
+            map: textureLoader.load("images/earth_color.jpg"),
+            normalMap: textureLoader.load("images/earth_normal.jpg")
+        })
+    );
+    world.position.y = -worldRadius - 0.5;
+    scene.add(world);
+
+        // Obstacles --------------------------------------------------------------------------------------
+
+    let obstacle1 = new THREE.Mesh(
+        new THREE.BoxGeometry(),
+        new THREE.MeshBasicMaterial({color: 0xFF0000})
+    );
+
+    let obstacle2 = new THREE.Mesh(
+        new THREE.BoxGeometry(),
+        new THREE.MeshBasicMaterial({color: 0xFF0000})
+    );
+    environment.add(obstacle2);
+
+    let obstacle3 = new THREE.Mesh(
+        new THREE.BoxGeometry(),
+        new THREE.MeshBasicMaterial({color: 0xFF0000})
+    );
+    // environment.add(obstacle3);
+    world.add(obstacle3);
+    // obstacle1.position.x = 10.5;
+    // obstacle1.position.y = -10.5;
+    // obstacle2.position.x = -10.5;
+    // // obstacle2.position.y = -10.5;
+    obstacle3.position.y = -worldRadius - 0.5
+        // Joueur --------------------------------------------------------------------------------------------
+    let player = new THREE.Mesh(
+        new THREE.BoxGeometry(),
+        new THREE.MeshBasicMaterial({color: 0x00F80})
+    );
+    player.position.x = 0;
+    player.position.y = 0;
+    player.position.z = 0;
+
+    scene.add(player);
+
+    var helper = new THREE.BoxHelper(obstacle3);
+    // alert(obstacle3.getWorldPosition().y)
+
+    function isCollision() {
+      var pos = new THREE.Vector3();
+      pos.setFromMatrixPosition(obstacle3.matrixWorld);
+
+      if (pos.distanceTo(player.position) <= 0.6  ) {
+        // alert(pos.distanceTo(player.position));
+      }
+    }
+
+    let vitesse = 0;
+    function animate(t) {
+        vitesse = t / 100000;
+        isCollision();
+        controls.update();
+        // world.rotateX(vitesse);
+        world.rotateX(0.1);
+        // obstacle1.translateY(1);
+        requestAnimationFrame(animate);
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+</script>
+</body>
+</html>
